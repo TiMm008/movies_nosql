@@ -69,37 +69,3 @@ db.movies.aggregate([ { "$match": {"$and":[{"$expr": { "$gt": [ "$tomatoes.criti
 # Query 12 -
 # Mean rate per type
 db.movies.aggregate([{ "$group": { "_id": "$type", "count":{"$avg":"$imdb.rating" } }}, { $sort : { count: -1 } }]).pretty()
-
-
-
-# Movies that have the higher rate or the more nominations
-db.movies.aggregate([
-{"imdb.rating":{"$gt":9}},
-
-# Films of Spielberg
-db.movies.find({"directors":"Steven Spielberg"},{"title": 1, "_id":0})
-
-# Every movie with Al Pacino
-
-
-# Mean of rate according to the size of the cast
-db.movies.aggregate([
-{"$group": {"_id": "$size": {"$cast"}, "count":{"$avg": "$imdb.rating"}}},
-{"$sort":{count: -1}}
-])
-
-db.movies.aggregate([{"$group":{"_id": "$size": {"$cast"}, "count":{"$avg": "$imdb.rating"}}},{"$sort":{count: -1}}])
-
-db.movies.aggregate([{"$group":{"_id": "$cast", "count":{"$avg": "$imdb.rating"}}},{"$sort":{count: -1}}])
-
-db.movies.aggregate([{"$group":{"_id": "$cast":{"$size": "$cast"}, "count":{"$avg": "$imdb.rating"}}},{"$sort":{count: -1}}])
-
-
-db.movies.aggregate([{ "$group": { "_id": {"$size":"$cast"}, "count":{"$sum":1 } }}])
-
-db.movies.aggregate([{ "$group": { "$size":"$cast", "count":{"$sum":1 } }}])
-
-
-
-
-
