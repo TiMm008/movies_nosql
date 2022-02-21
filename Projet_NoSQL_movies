@@ -1,0 +1,105 @@
+# Query 1 - logical operator 
+# Every drama movie in English
+{"$and":[{"genres":"Drama"}, {"languages":"English"}]}
+
+
+# Query 2 - mix of comparison and logical operator,  and array
+# Every movie with a rating higher than 9 and has at least 4 nomination
+{"$and":[{"imdb.rating":{"$gt":9}}, {"awards.nominations":{"$gt":4}}]}
+db.movies.find({"$and":[{"imdb.rating":{"$gt":9}}, {"awards.nominations":{"$gt":4}}]}, {"title":1} )
+# Every movie with a rating higher than 9
+{"imdb.rating":{"$gt":9}}
+
+
+# Query 3 - mix of comparison and logical operator,  and array
+# Number of wins for a cast of 4 people
+{"$and":[
+{"cast": {"$size": 4}},
+{"awards.wins":{"$gt":15}}
+]}
+
+
+# Query 4 - aggregation and array
+# Number of movies by country, which have a higher rate than 8
+db.movies.aggregate([ { "$match": { "imdb.rating": {"$gt":8}}},{ "$group": { "_id": "$countries", "count":{"$sum":1 } }}, { $sort : { count: -1 } }]).pretty()
+
+# Query 5 - aggregation
+# Number of movies by genre, which have at least 4 awards
+db.movies.aggregate([ { "$match": { "awards.nominations": {"$gt":8}}},{ "$group": { "_id": "$genres", "count":{"$sum":1 } }}, { $sort : { count: -1 } }]).pretty()
+
+# Query 6 - aggregation
+# Years that had the most movies with an award
+db.movies.aggregate([{ "$match": {"awards.nominations":{"$gt":1}}},{ "$group": { "_id": "$year", "count":{"$sum":1 } }},{ $sort : { count: -1 } }]).pretty()
+
+# Query 7 - $expr
+# Movies that were written and directed by the same person, with a rate higher than 9
+db.movies.find({"$and":[{"imdb.rating":{"$gt":9}},{ "$expr": { "$eq": [ "$directors", "$writers"] }}]}).count()
+14 with rate > 9 and with same director and writter
+
+
+# Query 8 - $expr
+# All movies that were written and directed by the same person
+db.movies.find({ "$expr": { "$eq": [ "$directors", "$writers"] }}).count()
+4719 movies with same director and writter
+23530 movies
+20% of movies have same director and writter
+
+# Query 9 - 
+# All movies with a rate higher than 9
+db.movies.find({"imdb.rating":{"$gt":9}}).count()
+20 with rate > 9
+db.movies.find({"$and":[{ "$expr": { "$eq": [ "$directors", "$writers"] }},{"imdb.rating":{"$gt":9}}]}).count()
+14 with the same director and writter with rate > 9
+70% with rate > 9 have the same director and writter
+
+
+# Query 10 - 
+# Rating of viewer is higher than rating of critics in tomatoes, count()
+db.movies.find({"$and":[{"$expr": { "$gt": [ "$tomatoes.viewer.rating", "$tomatoes.critic.rating" ] }},{"tomatoes.critic.rating":{"$gt":0}}]}).count()
+143
+
+# Query 11 - 
+# Rating of viewer is higher than rating of critics in tomatoes, per genre
+db.movies.aggregate([ { "$match": {"$and":[{"$expr": { "$gt": [ "$tomatoes.viewer.rating", "$tomatoes.critic.rating" ] }},{"tomatoes.critic.rating":{"$gt":0}}]}},{ "$group": { "_id": "$genres", "count":{"$sum":1 } }}, { $sort : { count: -1 } }]).pretty()
+
+# Rating of critic is higher than rating of viewer in tomatoes, per genre
+db.movies.aggregate([ { "$match": {"$and":[{"$expr": { "$gt": [ "$tomatoes.critic.rating", "$tomatoes.viewer.rating" ] }},{"tomatoes.critic.rating":{"$gt":0}}]}},{ "$group": { "_id": "$genres", "count":{"$sum":1 } }}, { $sort : { count: -1 } }]).pretty()
+
+
+# Query 12 -
+# Mean rate per type
+db.movies.aggregate([{ "$group": { "_id": "$type", "count":{"$avg":"$imdb.rating" } }}, { $sort : { count: -1 } }]).pretty()
+
+
+
+# Movies that have the higher rate or the more nominations
+db.movies.aggregate([
+{"imdb.rating":{"$gt":9}},
+
+# Films of Spielberg
+db.movies.find({"directors":"Steven Spielberg"},{"title": 1, "_id":0})
+
+# Every movie with Al Pacino
+
+
+# Mean of rate according to the size of the cast
+db.movies.aggregate([
+{"$group": {"_id": "$size": {"$cast"}, "count":{"$avg": "$imdb.rating"}}},
+{"$sort":{count: -1}}
+])
+
+db.movies.aggregate([{"$group":{"_id": "$size": {"$cast"}, "count":{"$avg": "$imdb.rating"}}},{"$sort":{count: -1}}])
+
+db.movies.aggregate([{"$group":{"_id": "$cast", "count":{"$avg": "$imdb.rating"}}},{"$sort":{count: -1}}])
+
+db.movies.aggregate([{"$group":{"_id": "$cast":{"$size": "$cast"}, "count":{"$avg": "$imdb.rating"}}},{"$sort":{count: -1}}])
+
+
+db.movies.aggregate([{ "$group": { "_id": {"$size":"$cast"}, "count":{"$sum":1 } }}])
+
+db.movies.aggregate([{ "$group": { "$size":"$cast", "count":{"$sum":1 } }}])
+
+
+
+
+
